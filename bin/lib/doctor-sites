@@ -1,0 +1,21 @@
+# Any custom site that should be installed goes here
+
+FULCRUM_INI="$FULCRUM_DIRNAME/etc/fulcrum/fulcrum.ini"
+
+# if $FULCRUM_INI doesn't exist or hello7_site doesn't exist in $FULCRUM_INI
+if [ ! -e "$FULCRUM_INI" ] || ! $(grep hello7_site $FULCRUM_INI > /dev/null 2>&1); then
+  vout "Creating Hello Fulcrum 7 site"
+
+  $FULCRUM_BINDIR/site2 hello7.fulcrum.ifdev
+
+  echo "hello7_site = 7.52" >> $FULCRUM_INI
+fi
+
+# if $FULCRUM_INI doesn't exist or hello8_site doesn't exist in $FULCRUM_INI
+if [ ! -e "$FULCRUM_INI" ] || ! $(grep hello8_site $FULCRUM_INI > /dev/null 2>&1); then
+  vout "Creating Hello Fulcrum 8 site"
+
+  $FULCRUM_BINDIR/site2 hello8.fulcrum.ifdev
+
+  echo "hello8_site = 8.2.3" >> $FULCRUM_INI
+fi
