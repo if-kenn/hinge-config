@@ -1,0 +1,5 @@
+FULCRUM_SITE=hello8.fulcrum.ifdev
+FULCRUM_DBGZ=https://github.com/if-fulcrum/fulcrum/raw/master/var/fulcrum/bak/hello8.sql.gz
+FULCRUM_DBNAME=hello8dev
+FULCRUM_REPO=https://github.com/if-fulcrum/hello8.git
+FULCRUM_WRD=docroot

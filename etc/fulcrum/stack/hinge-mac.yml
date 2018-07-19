@@ -1,0 +1,311 @@
+blackfire:
+  container_name: blackfire
+  image: blackfire/blackfire
+  env_file: ~/fulcrum/etc/fulcrum/stack/env/blackfire.env
+
+behat:
+  container_name: behat
+  image: fulcrum/behat
+  tty: true
+  volumes:
+   - /mnt/fulcrum/sites:/sites:ro
+
+cron:
+  container_name: cron
+  image: fulcrum/util
+  tty: true
+  volumes:
+   - /mnt/fulcrum/etc/fulcrum/cron/periodic:/etc/periodic:ro
+  entrypoint: /usr/sbin/crond
+  command: -f
+
+# /mnt/fulcrum/var/lib/mysql is exported twice
+# for compatibility with debian and alpine mariadb
+mariadb:
+  container_name: mariadb
+  image: fulcrum/mariadb:latest
+  volumes:
+   - /mnt/fulcrum/etc/mysql:/etc/mysql:ro
+   - /mnt/fulcrum/var/log/mariadb:/var/log
+   - /mnt/fulcrum/var/lib/mysql:/var/lib/mysql
+   - /mnt/fulcrum/var/lib/mysql:/data/mysql
+  environment:
+   - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+  ports:
+    - "3306:3306"
+
+redis:
+  container_name: redis
+  image: fulcrum/redis:latest-alpine
+  volumes:
+    - /mnt/fulcrum/etc/redis/redis.conf:/etc/redis/redis.conf:ro
+    - /mnt/fulcrum/var/log/redis:/var/log
+  ports:
+    - "6379:6379"
+
+memcached:
+  container_name: memcached
+  image: memcached:alpine
+  ports:
+    - "11211:11211"
+
+phpfpm:
+  container_name: phpfpm
+  image: fulcrum/php:latest-alpine
+  volumes:
+    - /mnt/fulcrum/etc/php5:/etc/php5:ro
+    - /mnt/fulcrum/var/log/php:/var/log
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+    - /mnt/fulcrum/var/fulcrum/private_files:/private
+    - /mnt/fulcrum/sites:/var/www/html
+  links:
+    - redis
+    - memcached
+    - mariadb
+    - solr
+    - elasticsearch
+  extra_hosts:
+    - "varnish:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_01:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_02:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_03:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_04:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_05:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_06:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_07:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_08:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_09:$FULCRUM_HOST_IP"
+  cap_add:
+    - SYS_PTRACE
+
+php7fpm:
+  container_name: php7fpm
+  image: fulcrum/php:7-latest-secure
+  volumes:
+    - /mnt/fulcrum/etc/php7:/etc/php7:ro
+    - /mnt/fulcrum/var/log/php7:/var/log/php7
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+    - /mnt/fulcrum/var/fulcrum/private_files:/private
+    - /mnt/fulcrum/sites:/var/www/html
+  links:
+    - blackfire
+    - redis
+    - mariadb
+    - solr
+    - elasticsearch
+  extra_hosts:
+    - "varnish:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_01:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_02:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_03:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_04:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_05:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_06:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_07:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_08:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_09:$FULCRUM_HOST_IP"
+  cap_add:
+    - SYS_PTRACE
+
+phpfpmxdebug:
+  container_name: phpfpmxdebug
+  image: fulcrum/php:latest-alpine-xdebug
+  volumes:
+    - /mnt/fulcrum/etc/php5:/etc/php5:ro
+    - /mnt/fulcrum/etc/php5xdebug/conf.d/zz-xdebug.ini:/etc/php5/conf.d/zz-xdebug.ini:ro
+    - /mnt/fulcrum/var/log/php:/var/log
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+    - /mnt/fulcrum/var/fulcrum/private_files:/private
+    - /mnt/fulcrum/sites:/var/www/html
+  links:
+    - redis
+    - mariadb
+    - solr
+    - elasticsearch
+  extra_hosts:
+    - "mymac:172.16.222.111"
+    - "varnish:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_01:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_02:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_03:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_04:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_05:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_06:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_07:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_08:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_09:$FULCRUM_HOST_IP"
+
+#  TODO image: fulcrum/php:latest-alpine-xdebug
+php7fpmxdebug:
+  container_name: php7fpmxdebug
+  image: fulcrum/php:7-xdebug-latest
+  volumes:
+    - /mnt/fulcrum/etc/php7:/etc/php7:ro
+    - /mnt/fulcrum/etc/php7xdebug/conf.d/zz-xdebug.ini:/etc/php7/conf.d/zz-xdebug.ini:ro
+    - /mnt/fulcrum/var/log/php7:/var/log/php7
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+    - /mnt/fulcrum/var/fulcrum/private_files:/private
+    - /mnt/fulcrum/sites:/var/www/html
+  links:
+    - redis
+    - mariadb
+    - solr
+    - elasticsearch
+  extra_hosts:
+    - "mymac:172.16.222.111"
+    - "varnish:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_01:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_02:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_03:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_04:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_05:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_06:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_07:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_08:$FULCRUM_HOST_IP"
+    - "$FULCRUM_VARNISH_09:$FULCRUM_HOST_IP"
+
+nginx:
+  container_name: nginx
+  image: fulcrum/nginx:1.13
+  volumes:
+    - /mnt/fulcrum/etc/nginx/fulcrum/entrypoint.sh:/entrypoint.sh:ro
+    - /mnt/fulcrum/etc/nginx:/etc/nginx
+    - /mnt/fulcrum/var/log/nginx:/var/log
+    - /mnt/fulcrum/sites:/var/www/html:ro
+  links:
+    - phpfpm
+    - php7fpm
+  ports:
+    - "8080:80"
+  entrypoint: "sh /entrypoint.sh"
+
+# this requires its own seperate /etc/nginx folder else the over-writes conflict with the normal nginx
+nginxxdebug:
+  container_name: nginxxdebug
+  image: fulcrum/nginx:1.13
+  volumes:
+    - /mnt/fulcrum/etc/nginx/fulcrum/entrypoint.sh:/entrypoint.sh:ro
+    - /mnt/fulcrum/etc/nginx:/etc/nginx
+    - /mnt/fulcrum/etc/nginx-xdebug/fulcrum:/etc/nginx/fulcrum
+    - /mnt/fulcrum/var/log/nginx:/var/log
+    - /mnt/fulcrum/sites:/var/www/html:ro
+  links:
+    - phpfpmxdebug
+    - php7fpmxdebug
+  ports:
+    - "8081:80"
+  entrypoint: "sh /entrypoint.sh"
+
+varnish:
+  container_name: varnish
+  image: fulcrum/varnish:5.1
+  volumes:
+    - /mnt/fulcrum/etc/varnish:/etc/varnish:ro
+    - /mnt/fulcrum/etc/varnish/include/audience-public.vcl:/etc/varnish/include/audience.vcl:ro
+    - /mnt/fulcrum/etc/varnish/include/x-forward-for-localdev.vcl:/etc/varnish/include/x-forward-for.vcl:ro
+    - /mnt/fulcrum/etc/varnish/include/beresp-ttl-dev.vcl:/etc/varnish/include/beresp-ttl.vcl:ro
+    - /mnt/fulcrum/etc/varnish/include/cache-tag-debug.vcl:/etc/varnish/include/cache-tag-remove.vcl:ro
+    - /mnt/fulcrum/etc/varnish/include/cookie-sessions.vcl:/etc/varnish/include/cookie-sessions.vcl:ro
+    - /mnt/fulcrum/var/log/varnish:/var/log
+  command: -F -P /var/run/varnish.pid -a :80,PROXY -f /etc/varnish/default.vcl -S /etc/varnish/secret -T 0.0.0.0:6082 -t 120 -s malloc,128M
+  links:
+    - nginx
+  ports:
+    - "6081:80"
+    - "6082:6082"
+
+varnishstatic:
+  container_name: varnishstatic
+  image: fulcrum/varnish:5.1
+  volumes:
+    - /mnt/fulcrum/etc/varnish:/etc/varnish:ro
+    - /mnt/fulcrum/etc/varnish/include/audience-public.vcl:/etc/varnish/include/audience.vcl:ro
+    - /mnt/fulcrum/etc/varnish/include/x-forward-for-localdev.vcl:/etc/varnish/include/x-forward-for.vcl:ro
+    - /mnt/fulcrum/etc/varnish/include/beresp-ttl-dev.vcl:/etc/varnish/include/beresp-ttl.vcl:ro
+    - /mnt/fulcrum/etc/varnish/include/cache-tag-debug.vcl:/etc/varnish/include/cache-tag-remove.vcl:ro
+    - /mnt/fulcrum/etc/varnish/include/cookie-sessions.vcl:/etc/varnish/include/cookie-sessions.vcl:ro
+    - /mnt/fulcrum/var/log/varnish:/var/log
+  command: -F -P /var/run/varnish.pid -a :80,PROXY -f /etc/varnish/default.vcl -S /etc/varnish/secret -T 0.0.0.0:6082 -t 120 -s malloc,128M
+  links:
+    - nginx
+
+
+# 4433 is for testing, bypass varnish on TLS
+# 5433 is for testing running php with xdebug
+haproxy:
+  container_name: haproxy
+  image: fulcrum/haproxy:1.8
+  volumes:
+    - /mnt/fulcrum/etc/haproxy:/etc/haproxy:ro
+    - /mnt/fulcrum/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
+    - /mnt/fulcrum/etc/certs.d:/etc/certs.d:ro
+    - /mnt/fulcrum/var/log/haproxy:/var/log
+  links:
+    - varnish
+    - varnishstatic
+    - nginx
+    - nginxxdebug
+  ports:
+    - "80:80"
+    - "443:443"
+    - "4080:4080"
+    - "4433:4433"
+    - "5080:5080"
+    - "5433:5433"
+    - "1936:1936"
+
+drush8-php5:
+  container_name: drush8-php5
+  image: fulcrum/drush8-php5
+  tty: true
+  volumes:
+    - /mnt/fulcrum/etc/php5:/etc/php5:ro
+    - /mnt/fulcrum/var/log/drush:/var/log
+    - /mnt/fulcrum/var/fulcrum/private_files:/private
+    - /mnt/fulcrum/sites:/var/www/html
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+  entrypoint: /bin/sh
+  links:
+    - redis
+    - mariadb
+    - varnish
+
+drush8-php7:
+  container_name: drush8-php7
+  image: fulcrum/drush8-php7
+  tty: true
+  volumes:
+    - /mnt/fulcrum/etc/php7:/etc/php7:ro
+    - /mnt/fulcrum/var/log/drush:/var/log
+    - /mnt/fulcrum/var/fulcrum/private_files:/private
+    - /mnt/fulcrum/sites:/var/www/html
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+    - /mnt/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+  entrypoint: /bin/sh
+  links:
+    - redis
+    - mariadb
+    - varnish
+
+solr:
+  container_name: solr
+  image: solr:5.4.1-alpine
+  ports:
+    - "8983:8983"
+  volumes:
+    - /mnt/fulcrum/var/log/solr:/opt/solr/server/logs
+    - /mnt/fulcrum/var/lib/solr:/opt/solr/server/solr
+    - /mnt/fulcrum/etc/solr-copy-configs:/opt/solr-copy-configs
+
+elasticsearch:
+  container_name: elasticsearch
+  image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
+  ports:
+    - "9200:9200"
+  volumes:
+     - /mnt/fulcrum/var/lib/elasticsearch:/usr/share/elasticsearch/data
