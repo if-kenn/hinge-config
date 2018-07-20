@@ -71,6 +71,7 @@ phpfpm:
     - "$FULCRUM_VARNISH_07:$FULCRUM_HOST_IP"
     - "$FULCRUM_VARNISH_08:$FULCRUM_HOST_IP"
     - "$FULCRUM_VARNISH_09:$FULCRUM_HOST_IP"
+
   cap_add:
     - SYS_PTRACE
 
@@ -100,6 +101,7 @@ php7fpm:
     - "$FULCRUM_VARNISH_07:$FULCRUM_HOST_IP"
     - "$FULCRUM_VARNISH_08:$FULCRUM_HOST_IP"
     - "$FULCRUM_VARNISH_09:$FULCRUM_HOST_IP"
+
   cap_add:
     - SYS_PTRACE
 
@@ -131,6 +133,8 @@ phpfpmxdebug:
     - "$FULCRUM_VARNISH_08:$FULCRUM_HOST_IP"
     - "$FULCRUM_VARNISH_09:$FULCRUM_HOST_IP"
 
+  cap_add:
+    - SYS_PTRACE
 
 #  TODO image: fulcrum/php:latest-alpine-xdebug
 php7fpmxdebug:
@@ -161,6 +165,8 @@ php7fpmxdebug:
     - "$FULCRUM_VARNISH_08:$FULCRUM_HOST_IP"
     - "$FULCRUM_VARNISH_09:$FULCRUM_HOST_IP"
 
+  cap_add:
+    - SYS_PTRACE
 
 nginx:
   container_name: nginx
@@ -203,7 +209,7 @@ varnish:
     - $HOME/fulcrum/etc/varnish/include/x-forward-for-localdev.vcl:/etc/varnish/include/x-forward-for.vcl:ro
     - $HOME/fulcrum/etc/varnish/include/beresp-ttl-dev.vcl:/etc/varnish/include/beresp-ttl.vcl:ro
     - $HOME/fulcrum/etc/varnish/include/cache-tag-debug.vcl:/etc/varnish/include/cache-tag-remove.vcl:ro
-    - $HOME/fulcrum/etc/varnish/include/cookie-sessions.vcl:/etc/varnish/include/cookie-sessions.vcl:ro
+
     - $HOME/fulcrum/var/log/varnish:/var/log
   command: -F -P /var/run/varnish.pid -a :80,PROXY -f /etc/varnish/default.vcl -S /etc/varnish/secret -T 0.0.0.0:6082 -t 120 -s malloc,128M
   links:
@@ -221,7 +227,7 @@ varnishstatic:
     - $HOME/fulcrum/etc/varnish/include/x-forward-for-localdev.vcl:/etc/varnish/include/x-forward-for.vcl:ro
     - $HOME/fulcrum/etc/varnish/include/beresp-ttl-dev.vcl:/etc/varnish/include/beresp-ttl.vcl:ro
     - $HOME/fulcrum/etc/varnish/include/cache-tag-debug.vcl:/etc/varnish/include/cache-tag-remove.vcl:ro
-    - $HOME/fulcrum/etc/varnish/include/cookie-sessions.vcl:/etc/varnish/include/cookie-sessions.vcl:ro
+
     - $HOME/fulcrum/var/log/varnish:/var/log
   command: -F -P /var/run/varnish.pid -a :80,PROXY -f /etc/varnish/default.vcl -S /etc/varnish/secret -T 0.0.0.0:6082 -t 120 -s malloc,128M
   links:
@@ -235,9 +241,11 @@ haproxy:
   image: fulcrum/haproxy:1.8
   volumes:
     - $HOME/fulcrum/etc/haproxy:/etc/haproxy:ro
-    - $HOME/fulcrum/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
     - $HOME/fulcrum/etc/certs.d:/etc/certs.d:ro
     - $HOME/fulcrum/var/log/haproxy:/var/log
+    - $HOME/fulcrum/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
+
+
   links:
     - varnish
     - varnishstatic
