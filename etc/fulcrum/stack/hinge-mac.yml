@@ -240,7 +240,7 @@ haproxy:
   container_name: haproxy
   image: fulcrum/haproxy:1.8
   volumes:
-    - /mnt/fulcrum/etc/haproxy:/etc/haproxy:ro
+    - /mnt/fulcrum/etc/haproxy:/etc/haproxy
     - /mnt/fulcrum/etc/certs.d:/etc/certs.d:ro
     - /mnt/fulcrum/var/log/haproxy:/var/log
     - /mnt/fulcrum/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
