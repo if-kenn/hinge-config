@@ -8,7 +8,7 @@ if [ ! -e "$FULCRUM_INI" ] || ! $(grep hello7_site $FULCRUM_INI > /dev/null 2>&1
   FULCRUM_RESTART="TRUE"
   vout "Creating Hello Fulcrum 7 site"
 
-  $FULCRUM_BINDIR/site2 hello7.fulcrum.ifdev
+  $FULCRUM_BINDIR/site hello7.fulcrum.ifdev
 
   echo "hello7_site = 7.52" >> $FULCRUM_INI
 fi
@@ -18,7 +18,7 @@ if [ ! -e "$FULCRUM_INI" ] || ! $(grep hello8_site $FULCRUM_INI > /dev/null 2>&1
   FULCRUM_RESTART="TRUE"
   vout "Creating Hello Fulcrum 8 site"
 
-  $FULCRUM_BINDIR/site2 hello8.fulcrum.ifdev
+  $FULCRUM_BINDIR/site hello8.fulcrum.ifdev
 
   echo "hello8_site = 8.2.3" >> $FULCRUM_INI
 fi
