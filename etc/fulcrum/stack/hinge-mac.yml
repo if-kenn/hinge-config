@@ -157,8 +157,8 @@ haproxy:
     - $FULCRUM_HOME_DC/fulcrum/etc/certs.d:/etc/certs.d:ro
     - $FULCRUM_HOME_DC/fulcrum/var/log/haproxy:/var/log
     - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/fulcrum.lua:/etc/haproxy/fulcrum.lua:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/ua.map:/etc/haproxy/ua.map:ro
+
+
   ports:
     - "80:80"
     - "443:443"
