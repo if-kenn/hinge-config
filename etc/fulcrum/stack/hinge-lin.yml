@@ -5,10 +5,10 @@ behat:
   volumes:
    - $FULCRUM_HOME_DC/fulcrum/sites:/sites:ro
 
-blackfire:
-  container_name: blackfire
-  image: blackfire/blackfire
-  env_file: $HOME/fulcrum/var/fulcrum/hinge-config/etc/blackfire/blackfire.env
+
+
+
+
 
 cron:
   container_name: cron
@@ -199,7 +199,7 @@ dnsmasq:
   links:
 
     - behat
-    - blackfire
+
     - cron
     - elasticsearch
     - haproxy
