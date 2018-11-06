@@ -1,1 +1,6 @@
 # Any custom code that needs to run goes here
+
+# set the dnsmasq hosts
+sed "s/\$FULCRUM_HOST_IP/$FULCRUM_HOST_IP/" \
+  ~/fulcrum/var/fulcrum/hinge-config/etc/dnsmasq/ifdev.conf.tmpl > \
+  ~/fulcrum/var/fulcrum/hinge-config/etc/dnsmasq/ifdev.conf
