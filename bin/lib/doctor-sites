@@ -1,26 +1,27 @@
 # Any custom site that should be installed goes here
 
 FULCRUM_INI="$FULCRUM_DIRNAME/etc/fulcrum/fulcrum.ini"
-FULCRUM_RESTART="FALSE"
 
-touch /tmp/HINGEUSEDEFAULTS
+touch /tmp/HINGEINSTALLING
 
-# if $FULCRUM_INI doesn't exist or hello7_site doesn't exist in $FULCRUM_INI
-if [ ! -e "$FULCRUM_INI" ] || ! $(grep hello7_site $FULCRUM_INI > /dev/null 2>&1); then
-  vout "Creating Hello Fulcrum 7 site"
+SITE=hello7
+# if $FULCRUM_INI doesn't exist or the site doesn't exist in $FULCRUM_INI
+if [ ! -e "$FULCRUM_INI" ] || ! $(grep ${SITE}_site $FULCRUM_INI > /dev/null 2>&1); then
+  vout "Creating $SITE site"
 
-  $FULCRUM_BINDIR/site hello7.fulcrum.ifdev
+  $FULCRUM_BINDIR/site $SITE.fulcrum.ifdev
 
-  echo "hello7_site = 7.52" >> $FULCRUM_INI
+  echo "${SITE}_site = installed" >> $FULCRUM_INI
 fi
 
-# if $FULCRUM_INI doesn't exist or hello8_site doesn't exist in $FULCRUM_INI
-if [ ! -e "$FULCRUM_INI" ] || ! $(grep hello8_site $FULCRUM_INI > /dev/null 2>&1); then
-  vout "Creating Hello Fulcrum 8 site"
+SITE=hello8
+# if $FULCRUM_INI doesn't exist or the site doesn't exist in $FULCRUM_INI
+if [ ! -e "$FULCRUM_INI" ] || ! $(grep ${SITE}_site $FULCRUM_INI > /dev/null 2>&1); then
+  vout "Creating $SITE site"
 
-  $FULCRUM_BINDIR/site hello8.fulcrum.ifdev
+  $FULCRUM_BINDIR/site $SITE.fulcrum.ifdev
 
-  echo "hello8_site = 8.2.3" >> $FULCRUM_INI
+  echo "${SITE}_site = installed" >> $FULCRUM_INI
 fi
 
-rm /tmp/HINGEUSEDEFAULTS
+rm /tmp/HINGEINSTALLING
