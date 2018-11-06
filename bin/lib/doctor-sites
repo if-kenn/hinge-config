@@ -22,8 +22,3 @@ if [ ! -e "$FULCRUM_INI" ] || ! $(grep hello8_site $FULCRUM_INI > /dev/null 2>&1
 
   echo "hello8_site = 8.2.3" >> $FULCRUM_INI
 fi
-
-# for some reason the stack needs to be flipped
-if [ "$FULCRUM_RESTART" == "TRUE" ]; then
-  drestart
-fi
