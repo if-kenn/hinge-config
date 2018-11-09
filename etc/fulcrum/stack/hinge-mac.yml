@@ -1,219 +1,269 @@
-behat:
-  container_name: behat
-  image: fulcrum/behat
-  tty: true
-  volumes:
-   - $FULCRUM_HOME_DC/fulcrum/sites:/sites:ro
+version: '3.7'
 
+volumes:
+  db-data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/mysql"
+  web-sites:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/sites"
+  php5-log:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php"
+  php7-log:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php7"
+  nginx-log:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/nginx"
+  solr-log:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/solr"
+  solr-data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/solr"
+  es-data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch"
 
+services:
+  behat:
+    container_name: behat
+    image: fulcrum/behat
+    network_mode: bridge
+    tty: true
+    volumes:
+     - web-sites:/sites:ro
 
+  blackfire:
+    container_name: blackfire
+    image: blackfire/blackfire
+    network_mode: bridge
+    env_file: $HOME/fulcrum/var/fulcrum/hinge-config/etc/blackfire/blackfire.env
 
+  cron:
+    container_name: cron
+    image: fulcrum/util
+    network_mode: bridge
+    tty: true
+    volumes:
+     - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/cron/periodic:/etc/periodic:ro
+    entrypoint: /usr/sbin/crond
+    command: -f
 
+  # db-data is exported twice for compatibility w debian & alpine
+  mariadb:
+    container_name: mariadb
+    image: fulcrum/mariadb:latest
+    network_mode: bridge
+    volumes:
+     - $FULCRUM_HOME_DC/fulcrum/etc/mysql:/etc/mysql:ro
+     - $FULCRUM_HOME_DC/fulcrum/var/log/mariadb:/var/log
+     - db-data:/var/lib/mysql
+     - db-data:/data/mysql
+    environment:
+     - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "3306:3306"
 
-cron:
-  container_name: cron
-  image: fulcrum/util
-  tty: true
-  volumes:
-   - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/cron/periodic:/etc/periodic:ro
-  entrypoint: /usr/sbin/crond
-  command: -f
+  redis:
+    container_name: redis
+    image: fulcrum/redis:latest-alpine
+    network_mode: bridge
+    volumes:
+      - $FULCRUM_HOME_DC/fulcrum/etc/redis/redis.conf:/etc/redis/redis.conf:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/log/redis:/var/log
+    ports:
+      - "6379:6379"
 
-# $FULCRUM_HOME_DC/fulcrum/var/lib/mysql is exported twice
-# for compatibility with debian and alpine mariadb
-mariadb:
-  container_name: mariadb
-  image: fulcrum/mariadb:latest
-  volumes:
-   - $FULCRUM_HOME_DC/fulcrum/etc/mysql:/etc/mysql:ro
-   - $FULCRUM_HOME_DC/fulcrum/var/log/mariadb:/var/log
-   - $FULCRUM_HOME_DC/fulcrum/var/lib/mysql:/var/lib/mysql
-   - $FULCRUM_HOME_DC/fulcrum/var/lib/mysql:/data/mysql
-  environment:
-   - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-  ports:
-    - "3306:3306"
+  memcached:
+    container_name: memcached
+    image: memcached:alpine
+    network_mode: bridge
+    ports:
+      - "11211:11211"
 
-redis:
-  container_name: redis
-  image: fulcrum/redis:latest-alpine
-  volumes:
-    - $FULCRUM_HOME_DC/fulcrum/etc/redis/redis.conf:/etc/redis/redis.conf:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/log/redis:/var/log
-  ports:
-    - "6379:6379"
+  authscale:
+    container_name: authscale
+    image: fulcrum/nodejs
+    network_mode: bridge
+    volumes:
+      - web-sites:/fulcrum/sites:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/authscale:/authscale
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/conf:/authscale/etc/conf.d:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/authscale/conf.json:/authscale/etc/conf.json:ro
+    ports:
+      - "21201:21201"
+    dns: $FULCRUM_HOST_IP
+    command: /authscale/src/authscale.js
 
-memcached:
-  container_name: memcached
-  image: memcached:alpine
-  ports:
-    - "11211:11211"
+  php56fpm:
+    container_name: php56fpm
+    image: fulcrum/php5-6-drush8
+    network_mode: bridge
+    volumes:
+      - $FULCRUM_HOME_DC/fulcrum/etc/php5:/etc/php5:ro
+      - php5-log:/var/log
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
+      - web-sites:/var/www/html
+    ports:
+      - "9056:9056"
+    dns: $FULCRUM_HOST_IP
+    cap_add:
+      - SYS_PTRACE
+    entrypoint: "/usr/bin/php-fpm --nodaemonize"
 
+  php71fpm:
+    container_name: php71fpm
+    image: fulcrum/php7-1-drush8
+    network_mode: bridge
+    volumes:
+      - $FULCRUM_HOME_DC/fulcrum/etc/php7:/etc/php7:ro
+      - php7-log:/var/log/php7
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
+      - web-sites:/var/www/html
+    ports:
+      - "9071:9071"
+    dns: $FULCRUM_HOST_IP
+    cap_add:
+      - SYS_PTRACE
 
+  nginx:
+    container_name: nginx
+    image: fulcrum/nginx:1.13
+    network_mode: bridge
+    volumes:
+      - $FULCRUM_HOME_DC/fulcrum/etc/nginx:/etc/nginx
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/nginx/resolver.conf:/etc/nginx/conf.d/resolver.conf:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/nginx/fulcrum/fulcrum_proxypass.conf:/etc/nginx/fulcrum/fulcrum_proxypass.conf
+      - nginx-log:/var/log
+      - web-sites:/var/www/html:ro
+    command: -c /etc/nginx/nginx.conf
+    ports:
+      - "8080:80"
+    dns: $FULCRUM_HOST_IP
 
+  varnish:
+    container_name: varnish
+    image: fulcrum/varnish:5.1
+    network_mode: bridge
+    volumes:
+      - $FULCRUM_HOME_DC/fulcrum/etc/varnish:/etc/varnish:ro
+      - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/audience-public.vcl:/etc/varnish/include/audience.vcl:ro
+      - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/x-forward-for-localdev.vcl:/etc/varnish/include/x-forward-for.vcl:ro
+      - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/beresp-ttl-dev.vcl:/etc/varnish/include/beresp-ttl.vcl:ro
+      - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/cache-tag-debug.vcl:/etc/varnish/include/cache-tag-remove.vcl:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/log/varnish:/var/log
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_backend_response_tail.vcl:/etc/varnish/include/vcl_backend_response_tail.vcl:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_deliver_tail.vcl:/etc/varnish/include/vcl_deliver_tail.vcl:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_hash_tail.vcl:/etc/varnish/include/vcl_hash_tail.vcl:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_hit_tail.vcl:/etc/varnish/include/vcl_hit_tail.vcl:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_recv_tail.vcl:/etc/varnish/include/vcl_recv_tail.vcl:ro
+    links:
+      - nginx
+    command: -F -P /var/run/varnish.pid -a :80,PROXY -f /etc/varnish/default.vcl -S /etc/varnish/secret -T 0.0.0.0:6082 -t 120 -s malloc,128M
+    ports:
+      - "6081:80"
+      - "6082:6082"
+    dns: $FULCRUM_HOST_IP
 
+  # 4433 is for testing, bypass varnish on TLS
+  haproxy:
+    container_name: haproxy
+    image: fulcrum/haproxy:1.8
+    network_mode: bridge
+    volumes:
+      - $FULCRUM_HOME_DC/fulcrum/etc/haproxy:/etc/haproxy
+      - $FULCRUM_HOME_DC/fulcrum/etc/certs.d:/etc/certs.d:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/log/haproxy:/var/log
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/fulcrum.lua:/etc/haproxy/fulcrum.lua:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/ua.map:/etc/haproxy/ua.map:ro
+    links:
+      - nginx
+      - varnish
+      - authscale
+    ports:
+      - "80:80"
+      - "443:443"
+      - "4080:4080"
+      - "4433:4433"
+      - "5080:5080"
+      - "1936:1936"
+    dns: $FULCRUM_HOST_IP
 
+  solr:
+    container_name: solr
+    image: solr:5.4.1-alpine
+    network_mode: bridge
+    ports:
+      - "8983:8983"
+    volumes:
+      - solr-log:/opt/solr/server/logs
+      - solr-data:/opt/solr/server/solr
+      - $FULCRUM_HOME_DC/fulcrum/etc/solr-copy-configs:/opt/solr-copy-configs
 
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
+    network_mode: bridge
+    ports:
+      - "9200:9200"
+    volumes:
+       - es-data:/usr/share/elasticsearch/data
 
-
-
-
-
-
-
-php56fpm:
-  container_name: php56fpm
-  image: fulcrum/php5-6-drush8
-  volumes:
-    - $FULCRUM_HOME_DC/fulcrum/etc/php5:/etc/php5:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/log/php:/var/log
-    - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
-    - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
-    - $FULCRUM_HOME_DC/fulcrum/sites:/var/www/html
-  ports:
-    - "9056:9056"
-  dns: $FULCRUM_HOST_IP
-  cap_add:
-    - SYS_PTRACE
-  entrypoint: "/usr/bin/php-fpm --nodaemonize"
-
-php71fpm:
-  container_name: php71fpm
-  image: fulcrum/php7-1-drush8
-  volumes:
-    - $FULCRUM_HOME_DC/fulcrum/etc/php7:/etc/php7:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/log/php7:/var/log/php7
-    - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
-    - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
-    - $FULCRUM_HOME_DC/fulcrum/sites:/var/www/html
-  ports:
-    - "9071:9071"
-  dns: $FULCRUM_HOST_IP
-  cap_add:
-    - SYS_PTRACE
-
-nginx:
-  container_name: nginx
-  image: fulcrum/nginx:1.13
-  volumes:
-    # - $FULCRUM_HOME_DC/fulcrum/etc/nginx/fulcrum/entrypoint.sh:/entrypoint.sh:ro
-    - $FULCRUM_HOME_DC/fulcrum/etc/nginx:/etc/nginx
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/nginx/resolver.conf:/etc/nginx/conf.d/resolver.conf:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/nginx/fulcrum/fulcrum_proxypass.conf:/etc/nginx/fulcrum/fulcrum_proxypass.conf
-    - $FULCRUM_HOME_DC/fulcrum/var/log/nginx:/var/log
-    - $FULCRUM_HOME_DC/fulcrum/sites:/var/www/html:ro
-  command: -c /etc/nginx/nginx.conf
-  ports:
-    - "8080:80"
-  dns: $FULCRUM_HOST_IP
-  # entrypoint: "sh /entrypoint.sh"
-
-varnish:
-  container_name: varnish
-  image: fulcrum/varnish:5.1
-  volumes:
-    - $FULCRUM_HOME_DC/fulcrum/etc/varnish:/etc/varnish:ro
-    - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/audience-public.vcl:/etc/varnish/include/audience.vcl:ro
-    - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/x-forward-for-localdev.vcl:/etc/varnish/include/x-forward-for.vcl:ro
-    - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/beresp-ttl-dev.vcl:/etc/varnish/include/beresp-ttl.vcl:ro
-    - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/cache-tag-debug.vcl:/etc/varnish/include/cache-tag-remove.vcl:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/log/varnish:/var/log
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_backend_response_tail.vcl:/etc/varnish/include/vcl_backend_response_tail.vcl:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_deliver_tail.vcl:/etc/varnish/include/vcl_deliver_tail.vcl:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_hash_tail.vcl:/etc/varnish/include/vcl_hash_tail.vcl:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_hit_tail.vcl:/etc/varnish/include/vcl_hit_tail.vcl:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_recv_tail.vcl:/etc/varnish/include/vcl_recv_tail.vcl:ro
-  command: -F -P /var/run/varnish.pid -a :80,PROXY -f /etc/varnish/default.vcl -S /etc/varnish/secret -T 0.0.0.0:6082 -t 120 -s malloc,128M
-  links:
-    - nginx
-  ports:
-    - "6081:80"
-    - "6082:6082"
-
-# varnishstatic:
-#   container_name: varnishstatic
-#   image: fulcrum/varnish:5.1
-#   volumes:
-#     - $FULCRUM_HOME_DC/fulcrum/etc/varnish:/etc/varnish:ro
-#     - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/audience-public.vcl:/etc/varnish/include/audience.vcl:ro
-#     - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/x-forward-for-localdev.vcl:/etc/varnish/include/x-forward-for.vcl:ro
-#     - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/beresp-ttl-dev.vcl:/etc/varnish/include/beresp-ttl.vcl:ro
-#     - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/cache-tag-debug.vcl:/etc/varnish/include/cache-tag-remove.vcl:ro
-#     - $FULCRUM_HOME_DC/fulcrum/var/log/varnish:/var/log
-#     - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/cookie-sessions.vcl:/etc/varnish/include/cookie-sessions.vcl:ro
-#   command: -F -P /var/run/varnish.pid -a :80,PROXY -f /etc/varnish/default.vcl -S /etc/varnish/secret -T 0.0.0.0:6082 -t 120 -s malloc,128M
-#   links:
-#     - nginx
-
-
-# 4433 is for testing, bypass varnish on TLS
-haproxy:
-  container_name: haproxy
-  image: fulcrum/haproxy:1.8
-  volumes:
-    - $FULCRUM_HOME_DC/fulcrum/etc/haproxy:/etc/haproxy
-    - $FULCRUM_HOME_DC/fulcrum/etc/certs.d:/etc/certs.d:ro
-    - $FULCRUM_HOME_DC/fulcrum/var/log/haproxy:/var/log
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
-
-
-  ports:
-    - "80:80"
-    - "443:443"
-    - "4080:4080"
-    - "4433:4433"
-    - "5080:5080"
-    - "1936:1936"
-  links:
-
-    - nginx
-    - varnish
-    # - varnishstatic
-
-solr:
-  container_name: solr
-  image: solr:5.4.1-alpine
-  ports:
-    - "8983:8983"
-  volumes:
-    - $FULCRUM_HOME_DC/fulcrum/var/log/solr:/opt/solr/server/logs
-    - $FULCRUM_HOME_DC/fulcrum/var/lib/solr:/opt/solr/server/solr
-    - $FULCRUM_HOME_DC/fulcrum/etc/solr-copy-configs:/opt/solr-copy-configs
-
-elasticsearch:
-  container_name: elasticsearch
-  image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
-  ports:
-    - "9200:9200"
-  volumes:
-     - $FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch:/usr/share/elasticsearch/data
-
-dnsmasq:
-  container_name: dnsmasq
-  image: fulcrum/dnsmasq
-  ports:
-    - "53:53/tcp"
-    - "53:53/udp"
-  links:
-
-    - behat
-
-    - cron
-    - elasticsearch
-    - haproxy
-    - mariadb
-    - memcached
-    - nginx
-    - php56fpm
-    - php71fpm
-    - redis
-    - solr
-    - varnish
-    # - varnishstatic
-  volumes:
-    - $FULCRUM_HOME_DC/fulcrum/etc/dnsmasq:/etc/dnsmasq
-    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/dnsmasq/ifdev.conf:/etc/dnsmasq/ifdev.conf:ro
-  cap_add:
-    - NET_ADMIN
+  dnsmasq:
+    container_name: dnsmasq
+    image: fulcrum/dnsmasq
+    network_mode: bridge
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    links:
+      - authscale
+      - behat
+      - blackfire
+      - cron
+      - elasticsearch
+      - haproxy
+      - mariadb
+      - memcached
+      - nginx
+      - php56fpm
+      - php71fpm
+      - redis
+      - solr
+      - varnish
+    volumes:
+      - $FULCRUM_HOME_DC/fulcrum/etc/dnsmasq:/etc/dnsmasq
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/dnsmasq/ifdev.conf:/etc/dnsmasq/ifdev.conf:ro
+    cap_add:
+      - NET_ADMIN
