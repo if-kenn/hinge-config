@@ -59,12 +59,6 @@ services:
     volumes:
      - web-sites:/sites:ro
 
-  blackfire:
-    container_name: blackfire
-    image: blackfire/blackfire
-    network_mode: bridge
-    env_file: $HOME/fulcrum/var/fulcrum/hinge-config/etc/blackfire/blackfire.env
-
   cron:
     container_name: cron
     image: fulcrum/util
@@ -234,7 +228,6 @@ services:
       - "53:53/udp"
     links:
       - behat
-      - blackfire
       - cron
       - elasticsearch
       - haproxy
