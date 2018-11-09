@@ -107,20 +107,6 @@ services:
     ports:
       - "11211:11211"
 
-  authscale:
-    container_name: authscale
-    image: fulcrum/nodejs
-    network_mode: bridge
-    volumes:
-      - web-sites:/fulcrum/sites:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/authscale:/authscale
-      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/conf:/authscale/etc/conf.d:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/authscale/conf.json:/authscale/etc/conf.json:ro
-    ports:
-      - "21201:21201"
-    dns: $FULCRUM_HOST_IP
-    command: /authscale/src/authscale.js
-
   php56fpm:
     container_name: php56fpm
     image: fulcrum/php5-6-drush8
@@ -210,7 +196,6 @@ services:
     links:
       - nginx
       - varnish
-      - authscale
     ports:
       - "80:80"
       - "443:443"
@@ -248,7 +233,6 @@ services:
       - "53:53/tcp"
       - "53:53/udp"
     links:
-      - authscale
       - behat
       - blackfire
       - cron
