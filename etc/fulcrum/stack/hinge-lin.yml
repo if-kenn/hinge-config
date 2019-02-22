@@ -114,7 +114,7 @@ varnish:
   container_name: varnish
   image: fulcrum/varnish:5.1
   volumes:
-    - $FULCRUM_HOME_DC/fulcrum/etc/varnish:/etc/varnish:ro
+    - $FULCRUM_HOME_DC/fulcrum/etc/varnish:/etc/varnish
     - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/audience-public.vcl:/etc/varnish/include/audience.vcl:ro
     - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/x-forward-for-localdev.vcl:/etc/varnish/include/x-forward-for.vcl:ro
     - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/beresp-ttl-dev.vcl:/etc/varnish/include/beresp-ttl.vcl:ro
@@ -125,6 +125,9 @@ varnish:
     - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_hash_tail.vcl:/etc/varnish/include/vcl_hash_tail.vcl:ro
     - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_hit_tail.vcl:/etc/varnish/include/vcl_hit_tail.vcl:ro
     - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_recv_tail.vcl:/etc/varnish/include/vcl_recv_tail.vcl:ro
+    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_miss_tail.vcl:/etc/varnish/include/vcl_miss_tail.vcl:ro
+    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_pass_tail.vcl:/etc/varnish/include/vcl_pass_tail.vcl:ro
+
   command: -F -P /var/run/varnish.pid -a :80,PROXY -f /etc/varnish/default.vcl -S /etc/varnish/secret -T 0.0.0.0:6082 -t 120 -s malloc,128M
   links:
     - nginx
