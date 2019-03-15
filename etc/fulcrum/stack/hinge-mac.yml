@@ -25,6 +25,12 @@ volumes:
       type: nfs
       o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
       device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php7"
+  php72-log:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php72"
   nginx-log:
     driver: local
     driver_opts:
@@ -136,6 +142,23 @@ services:
     cap_add:
       - SYS_PTRACE
 
+  php72fpm:
+    container_name: php72fpm
+    image: fulcrum/php7-2-drush8
+    network_mode: bridge
+    volumes:
+      - $FULCRUM_HOME_DC/fulcrum/etc/php72:/etc/php7:ro
+      - php72-log:/var/log/php7
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
+      - web-sites:/var/www/html
+    ports:
+      - "9072:9072"
+    dns: $FULCRUM_HOST_IP
+    cap_add:
+      - SYS_PTRACE
+
   nginx:
     container_name: nginx
     image: fulcrum/nginx:1.13
@@ -238,6 +261,7 @@ services:
       - nginx
       - php56fpm
       - php71fpm
+      - php72fpm
       - redis
       - solr
       - varnish

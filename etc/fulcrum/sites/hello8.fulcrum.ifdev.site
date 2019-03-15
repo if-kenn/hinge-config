@@ -3,3 +3,4 @@ FULCRUM_DBGZ=https://github.com/if-fulcrum/fulcrum/raw/master/var/fulcrum/bak/he
 FULCRUM_DBNAME=hello8dev
 FULCRUM_REPO=https://github.com/if-fulcrum/hello8.git
 FULCRUM_WRD=docroot
+FULCRUM_PHPVERSION=72

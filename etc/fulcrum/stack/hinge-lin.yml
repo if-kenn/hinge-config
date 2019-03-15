@@ -94,6 +94,22 @@ php71fpm:
   cap_add:
     - SYS_PTRACE
 
+php72fpm:
+  container_name: php72fpm
+  image: fulcrum/php7-2-drush8
+  volumes:
+    - $FULCRUM_HOME_DC/fulcrum/etc/php72:/etc/php7:ro
+    - $FULCRUM_HOME_DC/fulcrum/var/log/php72:/var/log/php7
+    - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+    - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+    - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
+    - $FULCRUM_HOME_DC/fulcrum/sites:/var/www/html
+  ports:
+    - "9072:9072"
+  dns: $FULCRUM_HOST_IP
+  cap_add:
+    - SYS_PTRACE
+
 nginx:
   container_name: nginx
   image: fulcrum/nginx:1.13
@@ -211,6 +227,7 @@ dnsmasq:
     - nginx
     - php56fpm
     - php71fpm
+    - php72fpm
     - redis
     - solr
     - varnish
