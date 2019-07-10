@@ -2,4 +2,4 @@ FULCRUM_SITE=hello7.fulcrum.ifdev
 FULCRUM_DBGZ=https://github.com/if-fulcrum/fulcrum/raw/master/var/fulcrum/bak/hello7.sql.gz
 FULCRUM_DBNAME=hello7dev
 FULCRUM_REPO=https://github.com/if-fulcrum/hello7.git
-FULCRUM_PHPVERSION=72
+FULCRUM_PHPVERSION=73
