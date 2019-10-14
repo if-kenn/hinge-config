@@ -19,18 +19,18 @@ volumes:
       type: nfs
       o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
       device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php"
-  php7-log:
+  php7.1-log:
     driver: local
     driver_opts:
       type: nfs
       o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
-      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php7"
-  php73-log:
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php7.1"
+  php7.3-log:
     driver: local
     driver_opts:
       type: nfs
       o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
-      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php73"
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php7.3"
   nginx-log:
     driver: local
     driver_opts:
@@ -125,13 +125,13 @@ services:
       - SYS_PTRACE
     entrypoint: "/usr/bin/php-fpm --nodaemonize"
 
-  php71fpm:
-    container_name: php71fpm
+  php7.1:
+    container_name: php7.1
     image: fulcrum/php7-1-drush8
     network_mode: bridge
     volumes:
-      - $FULCRUM_HOME_DC/fulcrum/etc/php7:/etc/php7:ro
-      - php7-log:/var/log/php7
+      - $FULCRUM_HOME_DC/fulcrum/etc/php7.1:/etc/php7:ro
+      - php7.1-log:/var/log/php7
       - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
       - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
@@ -142,13 +142,13 @@ services:
     cap_add:
       - SYS_PTRACE
 
-  php73fpm:
-    container_name: php73fpm
+  php7.3:
+    container_name: php7.3
     image: fulcrum/php7-3-drush8
     network_mode: bridge
     volumes:
-      - $FULCRUM_HOME_DC/fulcrum/etc/php73:/etc/php7:ro
-      - php73-log:/var/log/php7
+      - $FULCRUM_HOME_DC/fulcrum/etc/php7.3:/etc/php7:ro
+      - php7.3-log:/var/log/php7
       - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
       - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
@@ -260,8 +260,8 @@ services:
       - memcached
       - nginx
       - php56fpm
-      - php71fpm
-      - php73fpm
+      - php7.1
+      - php7.3
       - redis
       - solr
       - varnish
