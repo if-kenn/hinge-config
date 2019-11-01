@@ -25,6 +25,12 @@ volumes:
       type: nfs
       o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
       device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php7.1"
+  php7.2-log:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php7.2"
   php7.3-log:
     driver: local
     driver_opts:
@@ -127,7 +133,7 @@ services:
 
   php7.1:
     container_name: php7.1
-    image: fulcrum/php7-1-drush8
+    image: fulcrum/php7.1-drush8
     network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/php7.1:/etc/php7:ro
@@ -142,9 +148,26 @@ services:
     cap_add:
       - SYS_PTRACE
 
+  php7.2:
+    container_name: php7.2
+    image: fulcrum/php7.2-drush8
+    network_mode: bridge
+    volumes:
+      - $FULCRUM_HOME_DC/fulcrum/etc/php7.2:/etc/php7:ro
+      - php7.2-log:/var/log/php7
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
+      - web-sites:/var/www/html
+    ports:
+      - "9072:9072"
+    dns: $FULCRUM_HOST_IP
+    cap_add:
+      - SYS_PTRACE
+
   php7.3:
     container_name: php7.3
-    image: fulcrum/php7-3-drush8
+    image: fulcrum/php7.3-drush8
     network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/php7.3:/etc/php7:ro
