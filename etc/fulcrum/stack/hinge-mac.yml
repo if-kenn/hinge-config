@@ -184,7 +184,7 @@ services:
 
   nginx:
     container_name: nginx
-    image: fulcrum/nginx:1.13
+    image: fulcrum/nginx:1.16
     network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/nginx:/etc/nginx
@@ -192,7 +192,7 @@ services:
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/nginx/fulcrum/fulcrum_proxypass.conf:/etc/nginx/fulcrum/fulcrum_proxypass.conf
       - nginx-log:/var/log
       - web-sites:/var/www/html:ro
-    command: -c /etc/nginx/nginx.conf
+    # command: -c /etc/nginx/nginx.conf
     ports:
       - "8080:80"
     dns: $FULCRUM_HOST_IP

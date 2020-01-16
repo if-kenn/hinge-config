@@ -128,7 +128,7 @@ php7.3:
 
 nginx:
   container_name: nginx
-  image: fulcrum/nginx:1.13
+  image: fulcrum/nginx:1.16
   volumes:
     # - $FULCRUM_HOME_DC/fulcrum/etc/nginx/fulcrum/entrypoint.sh:/entrypoint.sh:ro
     - $FULCRUM_HOME_DC/fulcrum/etc/nginx:/etc/nginx
@@ -136,7 +136,7 @@ nginx:
     - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/nginx/fulcrum/fulcrum_proxypass.conf:/etc/nginx/fulcrum/fulcrum_proxypass.conf
     - $FULCRUM_HOME_DC/fulcrum/var/log/nginx:/var/log
     - $FULCRUM_HOME_DC/fulcrum/sites:/var/www/html:ro
-  command: -c /etc/nginx/nginx.conf
+  # command: -c /etc/nginx/nginx.conf
   ports:
     - "8080:80"
   dns: $FULCRUM_HOST_IP
