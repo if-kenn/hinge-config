@@ -70,6 +70,7 @@ services:
     tty: true
     volumes:
      - web-sites:/sites:ro
+    dns: $FULCRUM_HOST_IP
 
   cron:
     container_name: cron
@@ -78,6 +79,7 @@ services:
     tty: true
     volumes:
      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/cron/periodic:/etc/periodic:ro
+    dns: $FULCRUM_HOST_IP
     entrypoint: /usr/sbin/crond
     command: -f
 
@@ -95,6 +97,7 @@ services:
      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
     ports:
       - "3306:3306"
+    dns: $FULCRUM_HOST_IP
 
   redis:
     container_name: redis
@@ -105,6 +108,7 @@ services:
       - $FULCRUM_HOME_DC/fulcrum/var/log/redis:/var/log
     ports:
       - "6379:6379"
+    dns: $FULCRUM_HOST_IP
 
   memcached:
     container_name: memcached
@@ -112,6 +116,7 @@ services:
     network_mode: bridge
     ports:
       - "11211:11211"
+    dns: $FULCRUM_HOST_IP
 
   php56fpm:
     container_name: php56fpm
@@ -136,7 +141,7 @@ services:
     image: fulcrum/php7.1-drush8
     network_mode: bridge
     volumes:
-      - $FULCRUM_HOME_DC/fulcrum/etc/php7.1:/etc/php7:ro
+      - $FULCRUM_HOME_DC/fulcrum/etc/php7:/etc/php7:ro
       - php7.1-log:/var/log/php7
       - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
       - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
@@ -164,7 +169,6 @@ services:
     dns: $FULCRUM_HOST_IP
     cap_add:
       - SYS_PTRACE
-
   php7.3:
     container_name: php7.3
     image: fulcrum/php7.3-drush8
@@ -203,6 +207,7 @@ services:
     network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/varnish:/etc/varnish
+      - $FULCRUM_HOME_DC/fulcrum/etc/varnish/backends-webs-decoupled.vcl:/etc/varnish/backends-webs.vcl:ro
       - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/audience-public.vcl:/etc/varnish/include/audience.vcl:ro
       - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/x-forward-for-localdev.vcl:/etc/varnish/include/x-forward-for.vcl:ro
       - $FULCRUM_HOME_DC/fulcrum/etc/varnish/include/beresp-ttl-dev.vcl:/etc/varnish/include/beresp-ttl.vcl:ro
@@ -215,11 +220,9 @@ services:
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_recv_tail.vcl:/etc/varnish/include/vcl_recv_tail.vcl:ro
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_miss_tail.vcl:/etc/varnish/include/vcl_miss_tail.vcl:ro
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/varnish/include/vcl_pass_tail.vcl:/etc/varnish/include/vcl_pass_tail.vcl:ro
-    links:
-      - nginx
-    command: -F -P /var/run/varnish.pid -a :80,PROXY -f /etc/varnish/default.vcl -S /etc/varnish/secret -T 0.0.0.0:6082 -t 120 -s malloc,128M -p workspace_backend=131072 -p http_resp_hdr_len=65536 -p http_resp_size=98304
+    command: -F -P /var/run/varnish.pid -a :6081,PROXY -f /etc/varnish/default.vcl -S /etc/varnish/secret -T 0.0.0.0:6082 -t 120 -s malloc,128M -p workspace_backend=131072 -p http_resp_hdr_len=65536 -p http_resp_size=98304
     ports:
-      - "6081:80"
+      - "6081:6081"
       - "6082:6082"
     dns: $FULCRUM_HOST_IP
 
@@ -235,9 +238,6 @@ services:
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/fulcrum.lua:/etc/haproxy/fulcrum.lua:ro
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/ua.map:/etc/haproxy/ua.map:ro
-    links:
-      - nginx
-      - varnish
     ports:
       - "80:80"
       - "443:443"
@@ -257,6 +257,7 @@ services:
       - solr-log:/opt/solr/server/logs
       - solr-data:/opt/solr/server/solr
       - $FULCRUM_HOME_DC/fulcrum/etc/solr-copy-configs:/opt/solr-copy-configs
+    dns: $FULCRUM_HOST_IP
 
   elasticsearch:
     container_name: elasticsearch
@@ -264,8 +265,10 @@ services:
     network_mode: bridge
     ports:
       - "9200:9200"
+      - "9300:9300"
     volumes:
        - es-data:/usr/share/elasticsearch/data
+    dns: $FULCRUM_HOST_IP
 
   dnsmasq:
     container_name: dnsmasq
@@ -274,20 +277,6 @@ services:
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-    links:
-      - behat
-      - cron
-      - elasticsearch
-      - haproxy
-      - mariadb
-      - memcached
-      - nginx
-      - php56fpm
-      - php7.1
-      - php7.3
-      - redis
-      - solr
-      - varnish
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/dnsmasq:/etc/dnsmasq
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/dnsmasq/ifdev.conf:/etc/dnsmasq/ifdev.conf:ro
