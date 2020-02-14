@@ -1,9 +1,10 @@
-version: '3'
+version: '3.7'
 
 services:
   behat:
     container_name: behat
     image: fulcrum/behat
+    network_mode: bridge
     tty: true
     volumes:
      - $FULCRUM_HOME_DC/fulcrum/sites:/sites:ro
@@ -16,6 +17,7 @@ services:
   cron:
     container_name: cron
     image: fulcrum/util
+    network_mode: bridge
     tty: true
     volumes:
      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/cron/periodic:/etc/periodic:ro
@@ -28,6 +30,7 @@ services:
   mariadb:
     container_name: mariadb
     image: fulcrum/mariadb:latest
+    network_mode: bridge
     volumes:
      - $FULCRUM_HOME_DC/fulcrum/etc/mysql:/etc/mysql:ro
      - $FULCRUM_HOME_DC/fulcrum/var/log/mariadb:/var/log
@@ -42,6 +45,7 @@ services:
   redis:
     container_name: redis
     image: fulcrum/redis:latest-alpine
+    network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/redis/redis.conf:/etc/redis/redis.conf:ro
       - $FULCRUM_HOME_DC/fulcrum/var/log/redis:/var/log
@@ -52,6 +56,7 @@ services:
   memcached:
     container_name: memcached
     image: memcached:alpine
+    network_mode: bridge
     ports:
       - "11211:11211"
     dns: $FULCRUM_HOST_IP
@@ -71,6 +76,7 @@ services:
   php56fpm:
     container_name: php56fpm
     image: fulcrum/php5-6-drush8
+    network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/php5:/etc/php5:ro
       - $FULCRUM_HOME_DC/fulcrum/var/log/php:/var/log
@@ -88,6 +94,7 @@ services:
   php7.1:
     container_name: php7.1
     image: fulcrum/php7.1-drush8
+    network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/php7:/etc/php7:ro
       - $FULCRUM_HOME_DC/fulcrum/var/log/php7.1:/var/log/php7
@@ -104,6 +111,7 @@ services:
   php7.2:
     container_name: php7.2
     image: fulcrum/php7.2-drush8
+    network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/php7.2:/etc/php7:ro
       - $FULCRUM_HOME_DC/fulcrum/var/log/php7.2:/var/log/php7
@@ -120,6 +128,7 @@ services:
   php7.3:
     container_name: php7.3
     image: fulcrum/php7.3-drush8
+    network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/php7.3:/etc/php7:ro
       - $FULCRUM_HOME_DC/fulcrum/var/log/php7.3:/var/log/php7
@@ -136,6 +145,7 @@ services:
   nginx:
     container_name: nginx
     image: fulcrum/nginx:1.16
+    network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/nginx:/etc/nginx
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/nginx/resolver.conf:/etc/nginx/conf.d/resolver.conf:ro
@@ -150,6 +160,7 @@ services:
   varnish:
     container_name: varnish
     image: fulcrum/varnish:5.1
+    network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/varnish:/etc/varnish
       - $FULCRUM_HOME_DC/fulcrum/etc/varnish/backends-webs-decoupled.vcl:/etc/varnish/backends-webs.vcl:ro
@@ -175,6 +186,7 @@ services:
   haproxy:
     container_name: haproxy
     image: fulcrum/haproxy:1.8
+    network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/haproxy:/etc/haproxy
       - $FULCRUM_HOME_DC/fulcrum/etc/certs.d:/etc/certs.d:ro
@@ -194,6 +206,7 @@ services:
   solr:
     container_name: solr
     image: solr:5.4.1-alpine
+    network_mode: bridge
     ports:
       - "8983:8983"
     volumes:
@@ -205,6 +218,7 @@ services:
   elasticsearch:
     container_name: elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
+    network_mode: bridge
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -215,6 +229,7 @@ services:
   dnsmasq:
     container_name: dnsmasq
     image: fulcrum/dnsmasq
+    network_mode: bridge
     ports:
       - "53:53/tcp"
       - "53:53/udp"
