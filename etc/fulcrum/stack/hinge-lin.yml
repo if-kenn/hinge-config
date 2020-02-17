@@ -225,6 +225,8 @@ services:
     volumes:
        - $FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch:/usr/share/elasticsearch/data
     dns: $FULCRUM_HOST_IP
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
 
   dnsmasq:
     container_name: dnsmasq
