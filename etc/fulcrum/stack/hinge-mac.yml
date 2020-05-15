@@ -61,6 +61,12 @@ volumes:
       type: nfs
       o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
       device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch"
+  es-data7:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch7"
 
 services:
   behat:
@@ -71,6 +77,17 @@ services:
     volumes:
      - web-sites:/sites:ro
     dns: $FULCRUM_HOST_IP
+
+  blackfire:
+    container_name: blackfire
+    image: blackfire/blackfire
+    network_mode: bridge
+    depends_on:
+      - dnsmasq
+    ports:
+      - "8707:8707"
+    dns: $FULCRUM_HOST_IP
+    env_file: $HOME/fulcrum/var/fulcrum/hinge-config/etc/blackfire/blackfire.env
 
   cron:
     container_name: cron
@@ -117,6 +134,20 @@ services:
     ports:
       - "11211:11211"
     dns: $FULCRUM_HOST_IP
+
+  authscale:
+    container_name: authscale
+    image: fulcrum/nodejs
+    network_mode: bridge
+    volumes:
+      - web-sites:/fulcrum/sites:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/authscale:/authscale
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/conf:/authscale/etc/conf.d:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/authscale/conf.json:/authscale/etc/conf.json:ro
+    ports:
+      - "21201:21201"
+    dns: $FULCRUM_HOST_IP
+    command: /authscale/src/authscale.js
 
   php56fpm:
     container_name: php56fpm
@@ -236,6 +267,8 @@ services:
       - $FULCRUM_HOME_DC/fulcrum/etc/certs.d:/etc/certs.d:ro
       - $FULCRUM_HOME_DC/fulcrum/var/log/haproxy:/var/log
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/fulcrum.lua:/etc/haproxy/fulcrum.lua:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/ua.map:/etc/haproxy/ua.map:ro
     ports:
       - "80:80"
       - "443:443"
@@ -257,8 +290,8 @@ services:
       - $FULCRUM_HOME_DC/fulcrum/etc/solr-copy-configs:/opt/solr-copy-configs
     dns: $FULCRUM_HOST_IP
 
-  elasticsearch:
-    container_name: elasticsearch
+  elasticsearch6:
+    container_name: elasticsearch6
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
     network_mode: bridge
     ports:
@@ -269,6 +302,20 @@ services:
     dns: $FULCRUM_HOST_IP
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+
+  elasticsearch7:
+    container_name: elasticsearch7
+    image: fulcrum/elasticsearch7.4
+    network_mode: bridge
+    ports:
+      - "9207:9200"
+      - "9307:9300"
+    volumes:
+       - es-data7:/usr/share/elasticsearch/data
+    dns: $FULCRUM_HOST_IP
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
 
   dnsmasq:
     container_name: dnsmasq
