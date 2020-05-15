@@ -78,17 +78,6 @@ services:
      - web-sites:/sites:ro
     dns: $FULCRUM_HOST_IP
 
-  blackfire:
-    container_name: blackfire
-    image: blackfire/blackfire
-    network_mode: bridge
-    depends_on:
-      - dnsmasq
-    ports:
-      - "8707:8707"
-    dns: $FULCRUM_HOST_IP
-    env_file: $HOME/fulcrum/var/fulcrum/hinge-config/etc/blackfire/blackfire.env
-
   cron:
     container_name: cron
     image: fulcrum/util
@@ -134,20 +123,6 @@ services:
     ports:
       - "11211:11211"
     dns: $FULCRUM_HOST_IP
-
-  authscale:
-    container_name: authscale
-    image: fulcrum/nodejs
-    network_mode: bridge
-    volumes:
-      - web-sites:/fulcrum/sites:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/authscale:/authscale
-      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/conf:/authscale/etc/conf.d:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/authscale/conf.json:/authscale/etc/conf.json:ro
-    ports:
-      - "21201:21201"
-    dns: $FULCRUM_HOST_IP
-    command: /authscale/src/authscale.js
 
   php56fpm:
     container_name: php56fpm
@@ -267,8 +242,6 @@ services:
       - $FULCRUM_HOME_DC/fulcrum/etc/certs.d:/etc/certs.d:ro
       - $FULCRUM_HOME_DC/fulcrum/var/log/haproxy:/var/log
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/fulcrum.lua:/etc/haproxy/fulcrum.lua:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/ua.map:/etc/haproxy/ua.map:ro
     ports:
       - "80:80"
       - "443:443"
