@@ -236,7 +236,7 @@ services:
       - "9207:9200"
       - "9307:9300"
     volumes:
-       - $FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch:/usr/share/elasticsearch/data
+       - $FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch7:/usr/share/elasticsearch/data
     dns: $FULCRUM_HOST_IP
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
