@@ -185,7 +185,7 @@ services:
 
   varnish:
     container_name: varnish
-    image: fulcrum/varnish:5.1
+    image: fulcrum/varnish:6.4
     network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/varnish:/etc/varnish
