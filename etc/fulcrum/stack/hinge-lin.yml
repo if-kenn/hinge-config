@@ -162,6 +162,8 @@ services:
     ports:
       - "6081:6081"
       - "6082:6082"
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
 
   # 4433 is for testing, bypass varnish on TLS
