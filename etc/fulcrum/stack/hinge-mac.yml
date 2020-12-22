@@ -31,6 +31,12 @@ volumes:
       type: nfs
       o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
       device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php7.3"
+  php7.4-log:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php7.4"
   nginx-log:
     driver: local
     driver_opts:
@@ -70,6 +76,8 @@ services:
     tty: true
     volumes:
      - web-sites:/sites:ro
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
 
   cron:
@@ -79,6 +87,8 @@ services:
     tty: true
     volumes:
      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/cron/periodic:/etc/periodic:ro
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
     entrypoint: /usr/sbin/crond
     command: -f
@@ -97,6 +107,8 @@ services:
      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
     ports:
       - "3306:3306"
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
 
   redis:
@@ -108,6 +120,8 @@ services:
       - $FULCRUM_HOME_DC/fulcrum/var/log/redis:/var/log
     ports:
       - "6379:6379"
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
 
   memcached:
@@ -116,6 +130,8 @@ services:
     network_mode: bridge
     ports:
       - "11211:11211"
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
 
   php56fpm:
@@ -131,6 +147,8 @@ services:
       - web-sites:/var/www/html
     ports:
       - "9056:9056"
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
     cap_add:
       - SYS_PTRACE
@@ -149,9 +167,12 @@ services:
       - web-sites:/var/www/html
     ports:
       - "9072:9072"
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
     cap_add:
       - SYS_PTRACE
+
   php7.3:
     container_name: php7.3
     image: fulcrum/php7.3-drush8
@@ -165,6 +186,27 @@ services:
       - web-sites:/var/www/html
     ports:
       - "9073:9073"
+    depends_on:
+      - dnsmasq
+    dns: $FULCRUM_HOST_IP
+    cap_add:
+      - SYS_PTRACE
+
+  php7.4:
+    container_name: php7.4
+    image: fulcrum/php7.4-drush8
+    network_mode: bridge
+    volumes:
+      - $FULCRUM_HOME_DC/fulcrum/etc/php7.4:/usr/local/etc:ro
+      - php7.4-log:/usr/local/var/log
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
+      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
+      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
+      - web-sites:/var/www/html
+    ports:
+      - "9074:9074"
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
     cap_add:
       - SYS_PTRACE
@@ -181,6 +223,8 @@ services:
       - web-sites:/var/www/html:ro
     ports:
       - "8080:80"
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
 
   varnish:
@@ -227,6 +271,8 @@ services:
       - "4433:4433"
       - "5080:5080"
       - "1936:1936"
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
 
   solr:
@@ -239,6 +285,8 @@ services:
       - solr-log:/opt/solr/server/logs
       - solr-data:/opt/solr/server/solr
       - $FULCRUM_HOME_DC/fulcrum/etc/solr-copy-configs:/opt/solr-copy-configs
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
 
   elasticsearch6:
@@ -250,6 +298,8 @@ services:
       - "9300:9300"
     volumes:
        - es-data:/usr/share/elasticsearch/data
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -263,6 +313,8 @@ services:
       - "9307:9300"
     volumes:
        - es-data7:/usr/share/elasticsearch/data
+    depends_on:
+      - dnsmasq
     dns: $FULCRUM_HOST_IP
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
