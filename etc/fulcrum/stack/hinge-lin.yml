@@ -83,45 +83,6 @@ services:
 
 
 
-  php56fpm:
-    container_name: php56fpm
-    image: fulcrum/php5-6-drush8
-    network_mode: bridge
-    volumes:
-      - $FULCRUM_HOME_DC/fulcrum/etc/php5:/etc/php5:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/log/php:/var/log
-      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
-      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
-      - $FULCRUM_HOME_DC/fulcrum/sites:/var/www/html
-    ports:
-      - "9056:9056"
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
-    cap_add:
-      - SYS_PTRACE
-    entrypoint: "/usr/bin/php-fpm --nodaemonize"
-
-  php7.2:
-    container_name: php7.2
-    image: fulcrum/php7.2-drush8
-    network_mode: bridge
-    volumes:
-      - $FULCRUM_HOME_DC/fulcrum/etc/php7.2:/etc/php7:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/log/php7.2:/var/log/php7
-      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
-      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
-      - $FULCRUM_HOME_DC/fulcrum/sites:/var/www/html
-    ports:
-      - "9072:9072"
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
-    cap_add:
-      - SYS_PTRACE
-
   php7.3:
     container_name: php7.3
     image: fulcrum/php7.3-drush8
