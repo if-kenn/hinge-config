@@ -43,12 +43,6 @@ volumes:
       type: nfs
       o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
       device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/solr"
-  es-data:
-    driver: local
-    driver_opts:
-      type: nfs
-      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
-      device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch"
   es-data7:
     driver: local
     driver_opts:
@@ -57,17 +51,6 @@ volumes:
       device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch7"
 
 services:
-  behat:
-    container_name: behat
-    image: fulcrum/behat
-    network_mode: bridge
-    tty: true
-    volumes:
-     - web-sites:/sites:ro
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
-
   cron:
     container_name: cron
     image: fulcrum/util
@@ -237,21 +220,6 @@ services:
     depends_on:
       - dnsmasq
     dns: $FULCRUM_HOST_IP
-
-  elasticsearch6:
-    container_name: elasticsearch6
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
-    network_mode: bridge
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-       - es-data:/usr/share/elasticsearch/data
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
-    environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
 
   elasticsearch7:
     container_name: elasticsearch7

@@ -1,21 +1,6 @@
 version: '3.7'
 
 services:
-  behat:
-    container_name: behat
-    image: fulcrum/behat
-    network_mode: bridge
-    tty: true
-    volumes:
-     - $FULCRUM_HOME_DC/fulcrum/sites:/sites:ro
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
-
-
-
-
-
   cron:
     container_name: cron
     image: fulcrum/util
@@ -70,18 +55,6 @@ services:
     depends_on:
       - dnsmasq
     dns: $FULCRUM_HOST_IP
-
-
-
-
-
-
-
-
-
-
-
-
 
   php7.3:
     container_name: php7.3
@@ -174,8 +147,6 @@ services:
       - $FULCRUM_HOME_DC/fulcrum/etc/certs.d:/etc/certs.d:ro
       - $FULCRUM_HOME_DC/fulcrum/var/log/haproxy:/var/log
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/hinge-config/etc/haproxy/local-dev.cfg:/etc/haproxy/haproxy.cfg:ro
-
-
     ports:
       - "80:80"
       - "443:443"
@@ -200,21 +171,6 @@ services:
     depends_on:
       - dnsmasq
     dns: $FULCRUM_HOST_IP
-
-  elasticsearch6:
-    container_name: elasticsearch6
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
-    network_mode: bridge
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-       - $FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch:/usr/share/elasticsearch/data
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
-    environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
 
   elasticsearch7:
     container_name: elasticsearch7
