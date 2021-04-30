@@ -67,15 +67,17 @@ services:
   # db-data is exported twice for compatibility w debian & alpine
   mariadb:
     container_name: mariadb
-    image: fulcrum/mariadb:latest
+    image: fulcrum/mariadb:10.5
     network_mode: bridge
     volumes:
      - $FULCRUM_HOME_DC/fulcrum/etc/mysql:/etc/mysql:ro
      - $FULCRUM_HOME_DC/fulcrum/var/log/mariadb:/var/log
-     - db-data:/var/lib/mysql
+    # alpine package uses /data/mysql
      - db-data:/data/mysql
+    # yobasystems/alpine-mariadb script uses /var/lib/mysql
+     - db-data:/var/lib/mysql
     environment:
-     - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+     - MYSQL_EMPTY_ROOT_PASSWORD=yes
     ports:
       - "3306:3306"
     depends_on:
