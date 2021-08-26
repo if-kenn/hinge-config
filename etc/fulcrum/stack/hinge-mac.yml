@@ -13,12 +13,6 @@ volumes:
       type: nfs
       o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
       device: ":$FULCRUM_HOME_DC/fulcrum/sites"
-  php7.3-log:
-    driver: local
-    driver_opts:
-      type: nfs
-      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
-      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/php7.3"
   php7.4-log:
     driver: local
     driver_opts:
@@ -31,38 +25,38 @@ volumes:
       type: nfs
       o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
       device: ":$FULCRUM_HOME_DC/fulcrum/var/log/nginx"
-  solr-log:
-    driver: local
-    driver_opts:
-      type: nfs
-      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
-      device: ":$FULCRUM_HOME_DC/fulcrum/var/log/solr"
-  solr-data:
-    driver: local
-    driver_opts:
-      type: nfs
-      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
-      device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/solr"
-  es-data7:
-    driver: local
-    driver_opts:
-      type: nfs
-      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
-      device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch7"
+  # solr7-log:
+  #   driver: local
+  #   driver_opts:
+  #     type: nfs
+  #     o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+  #     device: ":$FULCRUM_HOME_DC/fulcrum/var/log/solr7"
+  # solr7-data:
+  #   driver: local
+  #   driver_opts:
+  #     type: nfs
+  #     o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+  #     device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/solr7"
+  # es-data7:
+  #   driver: local
+  #   driver_opts:
+  #     type: nfs
+  #     o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+  #     device: ":$FULCRUM_HOME_DC/fulcrum/var/lib/elasticsearch7"
 
 services:
-  cron:
-    container_name: cron
-    image: fulcrum/util
-    network_mode: bridge
-    tty: true
-    volumes:
-     - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/cron/periodic:/etc/periodic:ro
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
-    entrypoint: /usr/sbin/crond
-    command: -f
+  # cron:
+  #   container_name: cron
+  #   image: fulcrum/util
+  #   network_mode: bridge
+  #   tty: true
+  #   volumes:
+  #    - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/cron/periodic:/etc/periodic:ro
+  #   depends_on:
+  #     - dnsmasq
+  #   dns: $FULCRUM_HOST_IP
+  #   entrypoint: /usr/sbin/crond
+  #   command: -f
 
   # db-data is exported twice for compatibility w debian & alpine
   mariadb:
@@ -97,34 +91,15 @@ services:
       - dnsmasq
     dns: $FULCRUM_HOST_IP
 
-  memcached:
-    container_name: memcached
-    image: memcached:alpine
-    network_mode: bridge
-    ports:
-      - "11211:11211"
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
-
-  php7.3:
-    container_name: php7.3
-    image: fulcrum/php7.3-drush8
-    network_mode: bridge
-    volumes:
-      - $FULCRUM_HOME_DC/fulcrum/etc/php7.3:/etc/php7:ro
-      - php7.3-log:/var/log/php7
-      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
-      - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
-      - web-sites:/var/www/html
-    ports:
-      - "9073:9073"
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
-    cap_add:
-      - SYS_PTRACE
+  # memcached:
+  #   container_name: memcached
+  #   image: memcached:alpine
+  #   network_mode: bridge
+  #   ports:
+  #     - "11211:11211"
+  #   depends_on:
+  #     - dnsmasq
+  #   dns: $FULCRUM_HOST_IP
 
   php7.4:
     container_name: php7.4
@@ -209,35 +184,35 @@ services:
       - dnsmasq
     dns: $FULCRUM_HOST_IP
 
-  solr:
-    container_name: solr
-    image: solr:5.4.1-alpine
-    network_mode: bridge
-    ports:
-      - "8983:8983"
-    volumes:
-      - solr-log:/opt/solr/server/logs
-      - solr-data:/opt/solr/server/solr
-      - $FULCRUM_HOME_DC/fulcrum/etc/solr-copy-configs:/opt/solr-copy-configs
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
+  # solr7:
+  #   container_name: solr7
+  #   image: solr:7.7-alpine
+  #   network_mode: bridge
+  #   ports:
+  #     - "8987:8983"
+  #   volumes:
+  #     - solr7-log:/opt/solr/server/logs
+  #     - solr7-data:/opt/solr/server/solr
+  #     - $FULCRUM_HOME_DC/fulcrum/etc/solr7-copy-configs:/opt/solr-copy-configs
+  #   depends_on:
+  #     - dnsmasq
+  #   dns: $FULCRUM_HOST_IP
 
-  elasticsearch7:
-    container_name: elasticsearch7
-    image: fulcrum/elasticsearch7.4
-    network_mode: bridge
-    ports:
-      - "9207:9200"
-      - "9307:9300"
-    volumes:
-       - es-data7:/usr/share/elasticsearch/data
-    depends_on:
-      - dnsmasq
-    dns: $FULCRUM_HOST_IP
-    environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.type=single-node"
+  # elasticsearch7:
+  #   container_name: elasticsearch7
+  #   image: fulcrum/elasticsearch7.4
+  #   network_mode: bridge
+  #   ports:
+  #     - "9207:9200"
+  #     - "9307:9300"
+  #   volumes:
+  #      - es-data7:/usr/share/elasticsearch/data
+  #   depends_on:
+  #     - dnsmasq
+  #   dns: $FULCRUM_HOST_IP
+  #   environment:
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #     - "discovery.type=single-node"
 
   dnsmasq:
     container_name: dnsmasq
