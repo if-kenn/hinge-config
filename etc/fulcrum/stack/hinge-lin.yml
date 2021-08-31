@@ -62,7 +62,7 @@ services:
     network_mode: bridge
     volumes:
       - $FULCRUM_HOME_DC/fulcrum/etc/php7.4:/usr/local/etc:ro
-      - $FULCRUM_HOME_DC/fulcrum/var/log/php7.4:/var/log/php7
+      - $FULCRUM_HOME_DC/fulcrum/var/log/php7.4:/usr/local/var/log
       - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum.php:ro
       - $FULCRUM_HOME_DC/fulcrum/etc/fulcrum/php/fulcrum.php:/fulcrum/fulcrum.php:ro
       - $FULCRUM_HOME_DC/fulcrum/var/fulcrum/private_files:/private
